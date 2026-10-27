@@ -89,6 +89,26 @@ async def run_try_message(settings: Settings, text: str) -> int:
         return 1
 
 
+async def start_healthcheck():
+    """Start lightweight HTTP server if PORT is provided by hosting (Render/Heroku)."""
+    port_str = os.environ.get("PORT")
+    if not port_str:
+        return
+    try:
+        port = int(port_str)
+        from aiohttp import web
+        app = web.Application()
+        app.router.add_get("/", lambda req: web.Response(text="OK"))
+        app.router.add_get("/health", lambda req: web.Response(text="OK"))
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", port)
+        await site.start()
+        logger.info(f"Healthcheck HTTP server running on port {port}")
+    except Exception as e:
+        logger.warning(f"Could not start healthcheck server on port {port_str}: {e}")
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description="Telegram Business Personal Assistant with Gemini")
     parser.add_argument(
@@ -167,6 +187,7 @@ async def main() -> int:
     logger.info(f"Gemini auth: {settings.gemini_auth_mode}")
 
     assistant = build_assistant(settings)
+    await start_healthcheck()
     dp = Dispatcher()
     router = build_router(assistant)
     dp.include_router(router)
