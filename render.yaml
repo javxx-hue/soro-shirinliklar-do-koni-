@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: soro-shirinliklari-bot
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CLICK_TOKEN
+        sync: false
+      - key: PAYME_TOKEN
+        sync: false
+      - key: STORE_LAT
+        value: "39.684100"
+      - key: STORE_LON
+        value: "66.927500"
+      - key: BASE_DELIVERY_PRICE
+        value: "12000"
+      - key: PRICE_PER_KM
+        value: "2500"
+      - key: FREE_DELIVERY_THRESHOLD
+        value: "250000"
+      - key: WORK_START
+        value: "08:30"
+      - key: WORK_END
+        value: "22:00"

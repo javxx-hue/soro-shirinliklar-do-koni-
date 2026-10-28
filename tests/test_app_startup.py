@@ -381,3 +381,36 @@ async def test_setup_bot_commands():
     }
     for req in required:
         assert req in command_names, f"Command '{req}' missing from set_my_commands!"
+
+
+@pytest.mark.asyncio
+async def test_health_check_handler():
+    """Verify handle_health_check returns 200 OK with expected JSON content."""
+    from bot import handle_health_check
+    import json
+
+    mock_request = MagicMock()
+    response = await handle_health_check(mock_request)
+    assert response.status == 200
+    data = json.loads(response.body.decode("utf-8"))
+    assert data["status"] == "ok"
+    assert "SORO Shirinliklari" in data["service"]
+
+
+@pytest.mark.asyncio
+async def test_start_health_server():
+    """Verify start_health_server binds successfully and can be cleanly stopped."""
+    from bot import start_health_server
+    import aiohttp
+
+    # Pick an arbitrary high port for testing
+    test_port = 18888
+    runner = await start_health_server(test_port)
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"http://127.0.0.1:{test_port}/health") as resp:
+                assert resp.status == 200
+                payload = await resp.json()
+                assert payload["status"] == "ok"
+    finally:
+        await runner.cleanup()

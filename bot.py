@@ -7,8 +7,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from typing import Optional, Tuple
 import aiosqlite
+from aiohttp import web
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -117,9 +119,36 @@ async def setup_bot_commands(bot: Bot) -> None:
     await bot.set_my_commands(commands)
 
 
+async def handle_health_check(request: web.Request) -> web.Response:
+    """HTTP Health Check endpoint for cloud platforms like Render.com."""
+    return web.json_response({
+        "status": "ok",
+        "service": "SORO Shirinliklari Telegram Bot",
+        "store": "SORO - SHIRINLIKLARI (Samarqand)",
+        "channel": "@sorosamarkand",
+    })
+
+
+async def start_health_server(port: int) -> web.AppRunner:
+    """
+    Starts an aiohttp HTTP server on 0.0.0.0:port to satisfy Render.com Web Service
+    health check requirements while aiogram runs long-polling concurrently.
+    """
+    app = web.Application()
+    app.router.add_get("/", handle_health_check)
+    app.router.add_get("/health", handle_health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, host="0.0.0.0", port=port)
+    await site.start()
+    logger.info("Render health check HTTP server listening on http://0.0.0.0:%d", port)
+    return runner
+
+
 async def main() -> None:
     """
     Initializes application dependencies and starts long-polling event loop.
+    If PORT environment variable is set (e.g. Render.com), starts an HTTP health server.
     """
     config = load_config()
     db = await get_db_connection("data/shop.db")
@@ -127,12 +156,26 @@ async def main() -> None:
 
     bot, dp = build_app(config=config, db_connection=db)
 
+    port_env = os.getenv("PORT")
+    web_runner: Optional[web.AppRunner] = None
+    if port_env:
+        try:
+            port = int(port_env)
+            web_runner = await start_health_server(port)
+        except Exception as e:
+            logger.warning("Could not start HTTP health server on port %s: %s", port_env, e)
+
     try:
         await setup_bot_commands(bot)
         logger.info("Bot commands configured. Starting sweet shop bot polling...")
         await dp.start_polling(bot)
     finally:
         logger.info("Shutting down bot session and closing database...")
+        if web_runner:
+            try:
+                await web_runner.cleanup()
+            except Exception as e:
+                logger.warning("Error cleaning up HTTP runner: %s", e)
         await bot.session.close()
         await db.close()
         logger.info("Bot successfully stopped.")
