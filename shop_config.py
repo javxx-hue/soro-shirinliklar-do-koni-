@@ -12,7 +12,7 @@ class Config:
     gemini_api_key: str = ""
     click_token: str = ""
     payme_token: str = ""
-    store_lat: float = 41.311081  # Default Toshkent markazi
+    store_lat: float = 41.311081
     store_lon: float = 69.240562
     base_delivery_price: int = 12000
     price_per_km: int = 2500

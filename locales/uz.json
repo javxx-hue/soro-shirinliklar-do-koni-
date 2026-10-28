@@ -1,5 +1,5 @@
 {
-  "welcome_msg": "Xush kelibsiz! 🍰\n\nBizning shirinliklar xonadonimizga marhamat! Har bir tort va pishiriq mehr bilan, faqat eng toza va tabiiy masalliqlardan tayyorlanadi.\n\nBugun kayfiyatingizni qanday shirinlik bilan ko'tarmoqchisiz? ✨",
+  "welcome_msg": "Xush kelibsiz! 🍰\n\n**SORO Shirinliklari (Samarqand)** qandolat uyining rasmiy botiga marhamat! 👰‍♀️ To'y va marosimlar, bayramlar uchun eng sara, yangi pishirilgan shirinliklar va maxsus tortlarni taqdim etamiz.\n\n🚛 Samarqand bo'ylab yetkazib berish bepul!\nBugun kayfiyatingizni qanday shirinlik bilan ko'tarmoqchisiz? ✨",
   "choose_language": "Iltimos, o'zingizga qulay tilni tanlang:\nПожалуйста, выберите удобный для вас язык:",
   "lang_selected_uz": "O'zbek tili tanlandi! 🇺🇿",
   "lang_selected_ru": "Rus tili tanlandi! 🇷🇺",
@@ -67,7 +67,7 @@
   "ai_consultant_intro": "Assalomu alaykum! Men sizning Shirinlik Somelyesiman 🍰\n\nSizga qaysi tadbir yoki kayfiyat uchun shirinlik tanlashda yordam beray? Masalan:\n• '10 kishilik bolalar tug'ilgan kuniga qaysi tort ma'qul?'\n• 'Yong'oqqa allergiyasi borlar uchun nima tavsiya qilasiz?'\n• 'Choyxo'rlik uchun eng mayin pirojniy qaysi?'\n\nSavolingizni yozib yuboring! 😊",
   "ai_consultant_thinking": "Shirinliklarimizni ko'rib chiqyapman, bir lahza... 💭",
   "ai_consultant_error": "Hozircha maslahat berishda biroz texnik uzilish bo'ldi. Iltimos, katalogimizdan bevosita ko'rib chiqing! 🍰",
-  "contact_info": "🍰 'Shirinliklar Xonadoni' qandolatchilik uyi\n\n📍 Manzil: Toshkent shahri, Amir Temur ko'chasi 1\n⏰ Ish vaqti: 09:00 - 22:00 (Har kuni)\n📞 Telefon: +998 (71) 200-00-00\n📸 Instagram: @shirinliklar_xonadoni\n\n🚗 Toshkent bo'ylab tezkor yetkazib beramiz! 250,000 so'mdan ortiq buyurtmalarga yetkazish bepul!",
+  "contact_info": "🎂 **SORO Shirinliklari (Samarqand)** 🧁\n\n👰‍♀️ To'y va marosimlar uchun buyurtmalar\n🏪 Do'konlar bilan hamkorlik (ulgurji / optom)\n🚛 Samarqand bo'ylab yetkazib berish bepul!\n\n📍 **Manzil:** Samarqand shahri, Vagzal\n🎯 **Mo'ljal:** 'Saodat' restorani\n⏰ **Ish vaqti:** 08:30 - 22:00 (Har kuni)\n\n📞 **Bog'lanish uchun telefonlar:**\n• 66 229 97 97\n• 88 039 99 90\n• 99 334 87 60\n\n📢 **Telegram kanalimiz:** @sorosamarkand",
   "admin_panel_title": "👑 Admin boshqaruv paneli",
   "admin_stats_msg": "📊 Bot statistikasi:\n\n👥 Foydalanuvchilar: {total_users}\n📦 Jami buyurtmalar: {total_orders}\n💰 Jami tushum: {total_revenue} so'm",
   "admin_new_order_alert": "🚨 Yangi buyurtma #{order_id}!\n\n👤 Mijoz: {customer_name}\n📱 Tel: {phone}\n💵 Summa: {total_amount} so'm\n🚗 Yetkazish: {delivery_type}\n⏰ Vaqt: {target_time}\n📍 Manzil: {address}",

@@ -9,7 +9,7 @@ from .models import ALL_TABLES, CREATE_INDEXES
 
 
 DEFAULT_CATEGORIES = [
-    {"name_uz": "🎂 Tortlar", "name_ru": "🎂 Торты", "sort_order": 1},
+    {"name_uz": "🎂 Tortlar va To'y tortlari", "name_ru": "🎂 Торты и Свадебные торты", "sort_order": 1},
     {"name_uz": "🧁 Kapkeyklar va Pirojniylar", "name_ru": "🧁 Капкейки и Пирожные", "sort_order": 2},
     {"name_uz": "🥐 Shirin pishiriqlar", "name_ru": "🥐 Сладкая выпечка", "sort_order": 3},
     {"name_uz": "🍫 Shokolad va konfetlar", "name_ru": "🍫 Шоколад и конфеты", "sort_order": 4},
@@ -94,6 +94,29 @@ DEFAULT_PRODUCTS = [
         "description_ru": "Премиальные конфеты-трюфели с орехами и натуральным какао.",
         "price": 110000,
         "weight": "250 g",
+        "photo_id": "",
+        "is_available": 1,
+    },
+    # SORO Shirinliklari: Maxsus to'y va tantana tortlari (Category 1)
+    {
+        "category_sort_order": 1,
+        "name_uz": "👰‍♀️ Oq marvarid (To'y torti, 3 qavatli)",
+        "name_ru": "👰‍♀️ Белый жемчуг (Свадебный торт, 3 яруса)",
+        "description_uz": "To'y va tantanali marosimlar uchun oliy toifali 3 qavatli tort. Nozik qaymoqli krem, rezavorlar va oq shokolad bezagi.",
+        "description_ru": "Роскошный 3-ярусный торт для свадеб и торжеств. Нежный сливочный крем, ягоды и декор из белого шоколада.",
+        "price": 650000,
+        "weight": "4.5 kg (25-30 kishilik)",
+        "photo_id": "",
+        "is_available": 1,
+    },
+    {
+        "category_sort_order": 1,
+        "name_uz": "✨ Tantanalar to'plami (To'y savatchasi)",
+        "name_ru": "✨ Набор для торжеств (Свадебная корзина)",
+        "description_uz": "Kelin salom, quda chaqiriq va to'y dasturxoni uchun saralangan mini pirojniylar, paxlava va pishiriqlar to'plami.",
+        "description_ru": "Набор изысканных мини-пирожных, пахлавы и восточных сладостей для праздничного дастархана.",
+        "price": 380000,
+        "weight": "3.0 kg",
         "photo_id": "",
         "is_available": 1,
     },
