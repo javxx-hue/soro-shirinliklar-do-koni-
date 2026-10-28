@@ -43,8 +43,9 @@ def build_stoplist_kb(products: List[Dict[str, Any]], lang: str = "uz") -> Inlin
 
 
 @products_router.message(
-    F.text.in_(["🍰 Mahsulotlar", "🧁 Mahsulotlar (Stop-list)", "Mahsulotlar", "Stop-list"]) | Command("stoplist")
+    F.text.in_(["🍰 Mahsulotlar", "🧁 Mahsulotlar (Stop-list)", "Mahsulotlar", "Stop-list"])
 )
+@products_router.message(Command("stoplist"))
 async def admin_products_stoplist(
     message: Message,
     db: Optional[aiosqlite.Connection] = None,

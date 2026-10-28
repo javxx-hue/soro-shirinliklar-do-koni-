@@ -155,10 +155,10 @@ def format_order_summary(
         get_text("cancel_btn", "uz"),
         get_text("cancel_btn", "ru"),
     ])
-    | Command("cancel")
     | F.text.casefold().contains("bekor qilish")
     | F.text.casefold().contains("отмена")
 )
+@order_router.message(Command("cancel"))
 async def handle_order_cancellation(
     event: Union[CallbackQuery, Message],
     state: Optional[FSMContext] = None,
@@ -203,9 +203,9 @@ async def handle_order_cancellation(
         get_text("btn_checkout", "uz"),
         get_text("btn_checkout", "ru"),
     ])
-    | Command("checkout")
-    | Command("order")
 )
+@order_router.message(Command("checkout"))
+@order_router.message(Command("order"))
 async def start_order_checkout(
     event: Union[CallbackQuery, Message],
     db: Optional[aiosqlite.Connection] = None,

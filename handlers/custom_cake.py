@@ -115,9 +115,12 @@ def format_custom_cake_summary(
         get_text("cancel_btn", "uz"),
         get_text("cancel_btn", "ru"),
     ])
-    | Command("cancel")
     | F.text.casefold().contains("bekor qilish")
-    | F.text.casefold().contains("отмена")
+    | F.text.casefold().contains("отмена"),
+)
+@custom_cake_router.message(
+    CustomCakeFSM(),
+    Command("cancel"),
 )
 async def handle_custom_cake_cancel(
     event: Union[CallbackQuery, Message],
@@ -161,9 +164,9 @@ async def handle_custom_cake_cancel(
 # Entry Point: Trigger Custom Cake Flow
 # ============================================================================
 
+@custom_cake_router.message(Command("custom_cake"))
 @custom_cake_router.message(
-    Command("custom_cake")
-    | F.text.regexp(r"(?i).*o'?z tortingizga.*")
+    F.text.regexp(r"(?i).*o'?z tortingizga.*")
     | F.text.regexp(r"(?i).*заказ торта по фото.*")
     | F.text.in_([
         get_text("btn_custom_cake", "uz"),

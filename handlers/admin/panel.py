@@ -51,7 +51,8 @@ async def admin_panel_command(
     await message.answer(welcome_text, reply_markup=admin_main_kb())
 
 
-@panel_router.message(F.text.in_(["📊 Statistika", "Statistika"]) | Command("stats"))
+@panel_router.message(F.text.in_(["📊 Statistika", "Statistika"]))
+@panel_router.message(Command("stats"))
 async def admin_statistics(
     message: Message,
     db: Optional[aiosqlite.Connection] = None,
@@ -88,7 +89,8 @@ async def admin_statistics(
     await message.answer(stats_text, reply_markup=admin_main_kb())
 
 
-@panel_router.message(F.text.in_(["📦 Yangi buyurtmalar", "📦 Buyurtmalar", "Buyurtmalar"]) | Command("orders"))
+@panel_router.message(F.text.in_(["📦 Yangi buyurtmalar", "📦 Buyurtmalar", "Buyurtmalar"]))
+@panel_router.message(Command("orders"))
 async def admin_new_orders(
     message: Message,
     db: Optional[aiosqlite.Connection] = None,

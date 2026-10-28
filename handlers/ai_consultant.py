@@ -128,9 +128,12 @@ async def open_ai_consultant_callback(
         get_text("cancel_btn", "uz"),
         get_text("cancel_btn", "ru"),
     ])
-    | Command("cancel")
     | F.text.casefold().contains("bekor qilish")
-    | F.text.casefold().contains("отмена")
+    | F.text.casefold().contains("отмена"),
+)
+@ai_consultant_router.message(
+    AIConsultantFSM.waiting_for_query,
+    Command("cancel"),
 )
 async def cancel_ai_consultant(
     event: Union[CallbackQuery, Message],
