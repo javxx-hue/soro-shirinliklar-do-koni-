@@ -80,5 +80,12 @@
   "my_orders_empty": "Sizda hali buyurtmalar yo'q. Shirinliklarimizdan buyurtma bering! 🍰",
   "order_tracking_format": "Buyurtma #{order_id} ({created_at}):\nHolati: {status_text}\nSumma: {total_amount} so'm",
   "night_mode_warning": "🌙 Hozir do'konimiz ish vaqtidan tashqarida (ish vaqti: 09:00 - 22:00).\nLekin siz buyurtma qoldirishingiz mumkin, ertaga ertalab birinchilardan bo'lib tayyorlaymiz va yetkazamiz! ☀️",
-  "added_to_cart_alert": "✅ Savatchaga qo'shildi! 🍰"
+  "added_to_cart_alert": "✅ Savatchaga qo'shildi! 🍰",
+  "payment_demo_mode": "Hozirda {provider} orqali to'lov tizimi test rejimida. Buyurtmangiz qabul qilindi! To'lovni mahsulotni qabul qilganda naqd yoki karta orqali amalga oshirishingiz mumkin. 🍰",
+  "payment_invoice_title": "Buyurtma #{order_id}",
+  "payment_invoice_desc": "Shirinliklar do'koni buyurtmasi #{order_id} uchun to'lov",
+  "payment_labeled_price": "Shirinliklar",
+  "payment_success_receipt": "To'lov muvaffaqiyatli qabul qilindi! 🎉\n\nBuyurtma #{order_id} uchun to'lov tasdiqlandi. Qandolatchilarimiz uni tayyorlashga kirishishdi! ✨",
+  "payment_order_not_found": "Buyurtma topilmadi yoki bekor qilingan.",
+  "payment_order_already_paid": "Bu buyurtma uchun to'lov allaqachon amalga oshirilgan."
 }
