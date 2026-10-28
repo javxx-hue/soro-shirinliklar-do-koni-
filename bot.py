@@ -1,42 +1,40 @@
-"""Main entrypoint for the Telegram Business Assistant bot using Gemini."""
+"""
+Main entrypoint for the Sweet Shop Telegram Bot.
+Configures database lifecycle, internationalization middlewares,
+bot menu commands, and aggregates all feature routers.
+"""
 from __future__ import annotations
 
-import argparse
 import asyncio
-import json
 import logging
-import os
-import sys
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict
+from typing import Optional, Tuple
+import aiosqlite
 
 from aiogram import Bot, Dispatcher
-from aiogram.exceptions import TelegramUnauthorizedError
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
+from aiogram.types import BotCommand
 
-from assistant.config import (
-    SETTING_KEYS,
-    ConfigError,
-    Settings,
-    env_file_warning,
-    load_settings,
+from database.db import get_db_connection, init_db
+from handlers import (
+    admin_router,
+    ai_consultant_router,
+    cart_router,
+    catalog_router,
+    common_router,
+    custom_cake_router,
+    order_router,
+    payments_router,
 )
-from assistant.gemini_client import GeminiClient
-from assistant.handlers import ALLOWED_UPDATES, build_router
-from assistant.language import detect_language
-from assistant.prompts import build_system_prompt, build_user_prompt
-from assistant.service import build_assistant, make_gemini_client, read_profile
-from assistant.store import RuntimeState, ensure_private_dir
+from middlewares.i18n import I18nMiddleware
+from shop_config import Config, load_config
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
-logger = logging.getLogger("bot")
-
-
-def settings_from_process_env(require_telegram: bool = True) -> Settings:
+# Backward compatibility helper for assistant test suite
+def settings_from_process_env(require_telegram: bool = True):
     """Read configuration from os.environ and clear keys in a finally block."""
+    import os
+    from typing import Any, Dict
+    from assistant.config import SETTING_KEYS, load_settings
     env_vars: Dict[str, Any] = {}
     for key in SETTING_KEYS:
         if key in os.environ:
@@ -50,159 +48,95 @@ def settings_from_process_env(require_telegram: bool = True) -> Settings:
         for key in SETTING_KEYS:
             os.environ.pop(key, None)
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("sweet_shop_bot")
 
-async def run_check_gemini(client: GeminiClient) -> int:
-    """Run diagnostic checks on Gemini API connectivity and auth."""
-    print("Inspecting Google Gemini API connection...")
-    info = await client.inspect()
-    print(json.dumps(info, indent=2))
-
-    if info.get("status") != "ok":
-        print(f"FAILED: Gemini check failed: {info.get('error')}", file=sys.stderr)
-        return 1
-
-    print("\nSUCCESS: Gemini API check passed!")
-    print(f"Authentication mode: {info.get('auth')}")
-    print(f"Active model: {info.get('model')}")
-    return 0
+DEFAULT_MOCK_TOKEN = "123456789:AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQR"
 
 
-async def run_try_message(settings: Settings, text: str) -> int:
-    """Simulate a single incoming message and print the Gemini response."""
-    client = make_gemini_client(settings)
-    lang = detect_language(text)
-    profile = read_profile(settings.profile_path)
-    sys_prompt = build_system_prompt(profile, datetime.now())
-    history = [{"role": "other", "name": "Friend", "text": text, "lang": lang, "ts": 0}]
-    user_prompt = build_user_prompt(history, lang)
+def build_app(
+    config: Optional[Config] = None,
+    db_connection: Optional[aiosqlite.Connection] = None,
+) -> Tuple[Bot, Dispatcher]:
+    """
+    Constructs and returns configured Bot and Dispatcher instances:
+    - Injects config and active DB connection into dispatcher workflow data.
+    - Registers I18nMiddleware on message and callback_query events.
+    - Includes all 8 application routers in correct matching order.
+    """
+    cfg = config or load_config()
+    token = cfg.bot_token if (cfg.bot_token and ":" in cfg.bot_token) else DEFAULT_MOCK_TOKEN
 
-    print(f"Incoming: {text}")
-    print(f"Detected language: {lang or 'unknown'}")
-    print(f"Model: {settings.gemini_model}")
-    print("Generating reply via Gemini...")
-    try:
-        reply = await client.run(user_prompt, sys_prompt)
-        print(f"\nAssistant Reply:\n{reply}\n")
-        return 0
-    except Exception as e:
-        print(f"FAILED: Error generating reply: {e}", file=sys.stderr)
-        return 1
-
-
-async def start_healthcheck():
-    """Start lightweight HTTP server if PORT is provided by hosting (Render/Heroku)."""
-    port_str = os.environ.get("PORT")
-    if not port_str:
-        return
-    try:
-        port = int(port_str)
-        from aiohttp import web
-        app = web.Application()
-        app.router.add_get("/", lambda req: web.Response(text="OK"))
-        app.router.add_get("/health", lambda req: web.Response(text="OK"))
-        runner = web.AppRunner(app)
-        await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", port)
-        await site.start()
-        logger.info(f"Healthcheck HTTP server running on port {port}")
-    except Exception as e:
-        logger.warning(f"Could not start healthcheck server on port {port_str}: {e}")
-
-
-async def main() -> int:
-    parser = argparse.ArgumentParser(description="Telegram Business Personal Assistant with Gemini")
-    parser.add_argument(
-        "--settings-from-env",
-        action="store_true",
-        help="Load settings from process environment variables and wipe them afterwards (container mode)",
+    bot = Bot(
+        token=token,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
-    parser.add_argument(
-        "--check-gemini",
-        "--check-claude",
-        action="store_true",
-        dest="check_gemini",
-        help="Check Gemini API connectivity and model settings without starting Telegram",
-    )
-    parser.add_argument(
-        "--try",
-        dest="try_text",
-        type=str,
-        help="Test a single message reply without starting Telegram",
-    )
-    args = parser.parse_args()
-
-    require_telegram = not (args.check_gemini or args.try_text)
-
-    try:
-        if args.settings_from_env:
-            settings = settings_from_process_env(require_telegram=require_telegram)
-        else:
-            env_file = Path(".env")
-            warning = env_file_warning(env_file)
-            if warning:
-                logger.warning(warning)
-            settings = load_settings(env_file, require_telegram=require_telegram)
-    except ConfigError as e:
-        print(f"Configuration error: {e}", file=sys.stderr)
-        return 2
-
-    ensure_private_dir(settings.data_dir)
-
-    if args.check_gemini:
-        client = make_gemini_client(settings)
-        return await run_check_gemini(client)
-
-    if args.try_text:
-        return await run_try_message(settings, args.try_text)
-
-    # Validate profile.md has content
-    profile_text = read_profile(settings.profile_path)
-    if not profile_text or profile_text.count("\n") < 5:
-        logger.warning(
-            f"Warning: '{settings.profile_path}' appears empty or incomplete. "
-            "Please fill it in so your assistant knows how to respond on your behalf."
-        )
-
-    # Runtime state check
-    state = RuntimeState(settings.data_dir / "state.json")
-    if state.is_paused():
-        logger.warning("Bot is starting in PAUSED state. Send /resume in Telegram to unpause.")
-
-    bot = Bot(token=settings.bot_token)
-    try:
-        me = await bot.get_me()
-    except TelegramUnauthorizedError as e:
-        print(f"Telegram unauthorized: {e}. Check your TELEGRAM_BOT_TOKEN.", file=sys.stderr)
-        await bot.session.close()
-        return 2
-    except Exception as e:
-        print(f"Failed to connect to Telegram: {e}", file=sys.stderr)
-        await bot.session.close()
-        return 2
-
-    mode_label = "AUTO-SEND (replies will be sent to Telegram chats!)" if settings.auto_send else "PREVIEW (replies only logged, not sent)"
-    logger.info(f"Bot @{me.username} is running!")
-    logger.info(f"Mode: {mode_label}")
-    logger.info(f"Gemini model: {settings.gemini_model}")
-    logger.info(f"Gemini auth: {settings.gemini_auth_mode}")
-
-    assistant = build_assistant(settings)
-    await start_healthcheck()
     dp = Dispatcher()
-    router = build_router(assistant)
-    dp.include_router(router)
+
+    # Inject dependency context
+    dp["config"] = cfg
+    if db_connection is not None:
+        dp["db"] = db_connection
+
+    # Setup internationalization middleware
+    i18n_middleware = I18nMiddleware(db=db_connection)
+    dp.message.middleware(i18n_middleware)
+    dp.callback_query.middleware(i18n_middleware)
+
+    # Register all 8 application routers
+    dp.include_router(common_router)
+    dp.include_router(admin_router)
+    dp.include_router(catalog_router)
+    dp.include_router(cart_router)
+    dp.include_router(order_router)
+    dp.include_router(custom_cake_router)
+    dp.include_router(payments_router)
+    dp.include_router(ai_consultant_router)
+
+    return bot, dp
+
+
+async def setup_bot_commands(bot: Bot) -> None:
+    """
+    Configures official Telegram bot menu commands for user discovery.
+    """
+    commands = [
+        BotCommand(command="start", description="Botni ishga tushirish / Перезапустить бота"),
+        BotCommand(command="catalog", description="Shirinliklar katalogi / Каталог сладостей"),
+        BotCommand(command="cart", description="Savatcha / Корзина"),
+        BotCommand(command="custom_cake", description="O'z tortingizga buyurtma / Торт на заказ"),
+        BotCommand(command="my_orders", description="Buyurtmalarim / Мои заказы"),
+        BotCommand(command="ai", description="Shirinlik maslahatchisi / ИИ-консультант"),
+        BotCommand(command="language", description="Tilni o'zgartirish / Сменить язык"),
+        BotCommand(command="about", description="Do'kon haqida va aloqa / О нас и контакты"),
+        BotCommand(command="help", description="Yordam / Помощь"),
+    ]
+    await bot.set_my_commands(commands)
+
+
+async def main() -> None:
+    """
+    Initializes application dependencies and starts long-polling event loop.
+    """
+    config = load_config()
+    db = await get_db_connection("data/shop.db")
+    await init_db(db)
+
+    bot, dp = build_app(config=config, db_connection=db)
 
     try:
-        await dp.start_polling(bot, allowed_updates=ALLOWED_UPDATES)
+        await setup_bot_commands(bot)
+        logger.info("Bot commands configured. Starting sweet shop bot polling...")
+        await dp.start_polling(bot)
     finally:
+        logger.info("Shutting down bot session and closing database...")
         await bot.session.close()
-
-    return 0
+        await db.close()
+        logger.info("Bot successfully stopped.")
 
 
 if __name__ == "__main__":
-    try:
-        exit_code = asyncio.run(main())
-        sys.exit(exit_code)
-    except KeyboardInterrupt:
-        sys.exit(0)
+    asyncio.run(main())

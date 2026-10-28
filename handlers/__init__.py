@@ -1,6 +1,7 @@
 """
 Handlers package for the sweet shop Telegram bot.
 """
+from .common import common_router
 from .catalog import catalog_router
 from .cart import cart_router
 from .order import order_router
@@ -10,6 +11,7 @@ from .admin import admin_router
 from .ai_consultant import ai_consultant_router
 
 __all__ = [
+    "common_router",
     "catalog_router",
     "cart_router",
     "order_router",
