@@ -338,7 +338,8 @@ class Assistant:
                 self.state.set_limit_until(until)
                 logger.warning(f"Gemini quota or rate limit reached: {e.detail or e}")
                 if self.settings.auto_send:
-                    await self._notify_owner(bot, f"⚠️ Gemini kvota limiti tugadi. Qayta tiklanish: {e.reset_text or 'bir ozdan so\'ng'}.")
+                    reset_msg = e.reset_text or "bir ozdan so'ng"
+                    await self._notify_owner(bot, f"⚠️ Gemini kvota limiti tugadi. Qayta tiklanish: {reset_msg}.")
                 self.outcomes.append(Outcome.LIMITED)
                 return Outcome.LIMITED
             except GeminiError as e:

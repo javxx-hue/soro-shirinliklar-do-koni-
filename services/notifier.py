@@ -30,9 +30,11 @@ def format_order_admin_text(order: Dict[str, Any], order_items: Optional[List[Di
     custom_note = order.get("custom_note")
     order_type = order.get("order_type", "standard")
 
+    order_label = "🎨 O'z tortingiz" if order_type == 'custom_cake' else "🍰 Standart buyurtma"
+
     lines = [
         f"🚨 <b>Yangi buyurtma #{order_id}!</b>",
-        f"📋 Turi: <b>{'🎨 O\'z tortingiz' if order_type == 'custom_cake' else '🍰 Standart buyurtma'}</b>",
+        f"📋 Turi: <b>{order_label}</b>",
         f"👤 Mijoz: <b>{customer}</b>",
         f"📱 Telefon: <b>{phone}</b>",
         f"🚗 Yetkazish: <b>{deliv_type_text}</b>",
