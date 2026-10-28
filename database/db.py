@@ -116,6 +116,8 @@ async def init_db(db_or_path: Union[aiosqlite.Connection, str, Path] = "data/sho
     """Initializes tables, indexes, and seeds starter sweet shop items if empty."""
     is_external_conn = isinstance(db_or_path, aiosqlite.Connection)
     conn: aiosqlite.Connection = db_or_path if is_external_conn else await get_db_connection(str(db_or_path))
+    if conn.row_factory is None:
+        conn.row_factory = aiosqlite.Row
 
     try:
         # Create all tables
