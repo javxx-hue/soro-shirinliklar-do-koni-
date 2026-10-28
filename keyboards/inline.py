@@ -289,3 +289,31 @@ def order_confirm_kb(lang: str = "uz") -> InlineKeyboardMarkup:
             ],
         ]
     )
+
+
+def ai_consultant_result_kb(lang: str = "uz") -> InlineKeyboardMarkup:
+    """
+    Inline keyboard presented below AI consultant recommendation:
+    [ 🍰 Vitrinani ko'rish ] (open_catalog)
+    [ ⬅️ Bosh menyu ] (to_main_menu)
+    """
+    catalog_label = "🍰 Vitrinani ko'rish" if lang == "uz" else "🍰 Посмотреть витрину"
+    main_menu_label = "⬅️ Bosh menyu" if lang == "uz" else "⬅️ Главное меню"
+
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=catalog_label,
+                    callback_data="open_catalog",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=main_menu_label,
+                    callback_data="to_main_menu",
+                )
+            ],
+        ]
+    )
+

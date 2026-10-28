@@ -7,6 +7,7 @@ from .order import order_router
 from .custom_cake import custom_cake_router
 from .payments import payments_router
 from .admin import admin_router
+from .ai_consultant import ai_consultant_router
 
 __all__ = [
     "catalog_router",
@@ -15,4 +16,5 @@ __all__ = [
     "custom_cake_router",
     "payments_router",
     "admin_router",
+    "ai_consultant_router",
 ]
