@@ -79,5 +79,6 @@
   "my_orders_title": "📦 Sizning buyurtmalaringiz:",
   "my_orders_empty": "Sizda hali buyurtmalar yo'q. Shirinliklarimizdan buyurtma bering! 🍰",
   "order_tracking_format": "Buyurtma #{order_id} ({created_at}):\nHolati: {status_text}\nSumma: {total_amount} so'm",
-  "night_mode_warning": "🌙 Hozir do'konimiz ish vaqtidan tashqarida (ish vaqti: 09:00 - 22:00).\nLekin siz buyurtma qoldirishingiz mumkin, ertaga ertalab birinchilardan bo'lib tayyorlaymiz va yetkazamiz! ☀️"
+  "night_mode_warning": "🌙 Hozir do'konimiz ish vaqtidan tashqarida (ish vaqti: 09:00 - 22:00).\nLekin siz buyurtma qoldirishingiz mumkin, ertaga ertalab birinchilardan bo'lib tayyorlaymiz va yetkazamiz! ☀️",
+  "added_to_cart_alert": "✅ Savatchaga qo'shildi! 🍰"
 }
