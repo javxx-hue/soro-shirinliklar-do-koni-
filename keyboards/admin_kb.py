@@ -61,7 +61,7 @@ def order_admin_actions_kb(
                 callback_data=f"admin_order:cancel:{order_id}",
             )
         ])
-    elif status == "preparing":
+    elif status in ("confirmed", "preparing"):
         rows.append([
             InlineKeyboardButton(
                 text=btn_ready,

@@ -87,5 +87,10 @@
   "payment_labeled_price": "Сладости",
   "payment_success_receipt": "Оплата успешно принята! 🎉\n\nОплата по заказу #{order_id} подтверждена. Наши кондитеры уже готовят ваш заказ! ✨",
   "payment_order_not_found": "Заказ не найден или был отменен.",
-  "payment_order_already_paid": "Этот заказ уже оплачен."
+  "payment_order_already_paid": "Этот заказ уже оплачен.",
+  "status_confirmed": "✅ Ваш заказ #{order_id} подтвержден и принят!",
+  "status_preparing": "👩‍🍳 Наши кондитеры начали готовить ваш заказ #{order_id}!",
+  "status_delivering": "🚗 Курьер с вашим заказом #{order_id} уже в пути!",
+  "status_completed": "🎉 Ваш заказ #{order_id} успешно доставлен! Приятного аппетита!",
+  "status_cancelled": "❌ Ваш заказ #{order_id} был отменен. {reason}"
 }

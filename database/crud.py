@@ -195,6 +195,15 @@ async def get_all_available_products(db: aiosqlite.Connection) -> List[Dict[str,
         return [dict(r) for r in rows]
 
 
+async def get_all_products(db: aiosqlite.Connection) -> List[Dict[str, Any]]:
+    """Returns all products regardless of availability."""
+    async with db.execute(
+        "SELECT * FROM products ORDER BY category_id ASC, id ASC;"
+    ) as cursor:
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
 # ==========================================
 # CART
 # ==========================================
@@ -420,6 +429,35 @@ async def get_all_orders(db: aiosqlite.Connection, limit: int = 50) -> List[Dict
     ) as cursor:
         rows = await cursor.fetchall()
         return [dict(r) for r in rows]
+
+
+async def get_order_statistics(db: aiosqlite.Connection) -> Dict[str, Any]:
+    """Calculates order and revenue statistics for admin dashboard."""
+    async with db.execute(
+        "SELECT COUNT(*) AS total_orders, COALESCE(SUM(total_amount), 0) AS total_revenue FROM orders;"
+    ) as cur:
+        row = await cur.fetchone()
+        total_orders = row["total_orders"] if row else 0
+        total_revenue = row["total_revenue"] if row else 0
+
+    async with db.execute(
+        "SELECT COUNT(*) AS today_orders, COALESCE(SUM(total_amount), 0) AS today_revenue FROM orders WHERE date(created_at) = date('now');"
+    ) as cur:
+        row2 = await cur.fetchone()
+        today_orders = row2["today_orders"] if row2 else 0
+        today_revenue = row2["today_revenue"] if row2 else 0
+
+    async with db.execute("SELECT COUNT(*) AS total_users FROM users;") as cur:
+        row3 = await cur.fetchone()
+        total_users = row3["total_users"] if row3 else 0
+
+    return {
+        "total_orders": total_orders,
+        "total_revenue": total_revenue,
+        "today_orders": today_orders,
+        "today_revenue": today_revenue,
+        "total_users": total_users,
+    }
 
 
 # ==========================================

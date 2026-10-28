@@ -87,5 +87,10 @@
   "payment_labeled_price": "Shirinliklar",
   "payment_success_receipt": "To'lov muvaffaqiyatli qabul qilindi! 🎉\n\nBuyurtma #{order_id} uchun to'lov tasdiqlandi. Qandolatchilarimiz uni tayyorlashga kirishishdi! ✨",
   "payment_order_not_found": "Buyurtma topilmadi yoki bekor qilingan.",
-  "payment_order_already_paid": "Bu buyurtma uchun to'lov allaqachon amalga oshirilgan."
+  "payment_order_already_paid": "Bu buyurtma uchun to'lov allaqachon amalga oshirilgan.",
+  "status_confirmed": "✅ Buyurtmangiz #{order_id} tasdiqlandi va qabul qilindi!",
+  "status_preparing": "👩‍🍳 Qandolatchilarimiz buyurtmangizni #{order_id} tayyorlashga kirishishdi!",
+  "status_delivering": "🚗 Kuryerimiz buyurtmangiz #{order_id} bilan yo'lga chiqdi!",
+  "status_completed": "🎉 Buyurtmangiz #{order_id} yetkazildi va muvaffaqiyatli yakunlandi! Yoqimli ishtaha!",
+  "status_cancelled": "❌ Buyurtmangiz #{order_id} bekor qilindi. {reason}"
 }
