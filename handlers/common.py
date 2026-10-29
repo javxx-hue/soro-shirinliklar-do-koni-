@@ -10,6 +10,7 @@ import aiosqlite
 
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject, CommandStart
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from database import crud
@@ -314,3 +315,42 @@ async def help_handler(
     """Displays user help guide."""
     text = _t("help_msg") if _t else get_text("help_msg", lang=lang)
     await message.answer(text)
+
+
+@common_router.message(Command("menu"))
+@common_router.message(
+    F.text.in_([
+        "⬅️ Bosh menyu",
+        "Bosh menyu",
+        "⬅️ Главное меню",
+        "Главное меню",
+        "Menyu",
+        "Меню",
+    ])
+)
+async def back_to_main_menu_handler(
+    message: Message,
+    state: Optional[FSMContext] = None,
+    db: Optional[aiosqlite.Connection] = None,
+    config: Optional[Config] = None,
+    lang: str = "uz",
+    _t: Optional[Callable[..., str]] = None,
+) -> None:
+    """Returns user back to client main navigation menu."""
+    if state is not None:
+        await state.clear()
+
+    conn = await _resolve_db(db)
+    cfg = _resolve_config(config)
+    user = message.from_user
+    user_id = user.id if user else 0
+    is_admin = user_id in cfg.admin_ids
+
+    cart_items = await crud.get_cart(conn, user_id)
+    cart_count = sum(item.get("quantity", 1) for item in cart_items)
+
+    main_text = _t("main_menu", lang=lang) if _t else get_text("main_menu", lang=lang)
+    await message.answer(
+        main_text,
+        reply_markup=main_menu_kb(lang=lang, cart_count=cart_count, is_admin=is_admin),
+    )

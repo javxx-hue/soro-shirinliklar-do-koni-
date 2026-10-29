@@ -42,10 +42,20 @@ def build_stoplist_kb(products: List[Dict[str, Any]], lang: str = "uz") -> Inlin
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
+@products_router.message(Command("stoplist", "mahsulotlar", "products"))
 @products_router.message(
-    F.text.in_(["🍰 Mahsulotlar", "🧁 Mahsulotlar (Stop-list)", "Mahsulotlar", "Stop-list"])
+    F.text.in_([
+        "🍰 Mahsulotlar",
+        "🧁 Mahsulotlar (Stop-list)",
+        "Mahsulotlar",
+        "Stop-list",
+        "🍰 Товары",
+        "🧁 Товары (Стоп-лист)",
+        "Товары",
+        "Стоп-лист",
+    ])
 )
-@products_router.message(Command("stoplist"))
+@products_router.message(F.text.regexp(r"(?i)^(/stoplist|.*stop.*list|🍰\s*mahsulot.*|🍰\s*товар.*)$"))
 async def admin_products_stoplist(
     message: Message,
     db: Optional[aiosqlite.Connection] = None,
@@ -103,23 +113,22 @@ async def handle_toggle_product(
     conn = await _resolve_db(db)
     prod = await crud.get_product(conn, prod_id)
     if not prod:
-        await callback.answer("Mahsulot topilmadi!", show_alert=True)
+        await callback.answer("Mahsulot topilmadi.", show_alert=True)
         return
 
-    current_avail = prod.get("is_available", 1)
-    new_avail = 0 if current_avail else 1
-    await crud.set_product_availability(conn, prod_id, new_avail)
+    new_state = 0 if prod.get("is_available", 1) == 1 else 1
+    await crud.set_product_availability(conn, prod_id, new_state)
 
-    # Re-render keyboard with updated availability
-    products = await crud.get_all_products(conn)
-    updated_kb = build_stoplist_kb(products, lang=lang)
+    updated_products = await crud.get_all_products(conn)
+    kb = build_stoplist_kb(updated_products, lang=lang)
+
+    status_word = "faollashtirildi (sotuvda bor)" if new_state == 1 else "to'xtatildi (stop-listga qo'yildi)"
+    p_name = prod.get("name_uz") or prod.get("name_ru") or "Mahsulot"
+
+    await callback.answer(f"«{p_name}» {status_word}!")
 
     if callback.message:
         try:
-            await callback.message.edit_reply_markup(reply_markup=updated_kb)
-        except Exception as exc:
-            logger.debug("Could not edit reply markup for products stoplist: %s", exc)
-
-    status_str = "Sotuvda mavjud ✅" if new_avail else "Stop-listga kiritildi ⛔️"
-    prod_name = prod.get("name_uz") or prod.get("name_ru") or "Mahsulot"
-    await callback.answer(f"{prod_name}: {status_str}")
+            await callback.message.edit_reply_markup(reply_markup=kb)
+        except Exception as e:
+            logger.debug("Failed to edit stoplist keyboard inline: %s", e)

@@ -645,3 +645,25 @@ async def test_admin_products_stoplist_view_and_toggle(memory_db, admin_config):
     assert prod_restored["is_available"] == 1
     cb.answer.assert_called_once()
     cb.message.edit_reply_markup.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_admin_back_to_main_menu(memory_db, admin_config):
+    """Verify admin can navigate from admin panel back to main menu."""
+    from handlers.admin.panel import admin_back_to_main_menu
+
+    msg = MagicMock(spec=Message)
+    msg.from_user = MagicMock(spec=User)
+    msg.from_user.id = 1001
+    msg.answer = AsyncMock()
+
+    mock_state = AsyncMock()
+
+    await admin_back_to_main_menu(msg, state=mock_state, db=memory_db, config=admin_config)
+
+    mock_state.clear.assert_called_once()
+    msg.answer.assert_called_once()
+    kb = msg.answer.call_args.kwargs.get("reply_markup")
+    assert kb is not None
+    button_texts = [btn.text for row in kb.keyboard for btn in row]
+    assert any("Admin" in t for t in button_texts)

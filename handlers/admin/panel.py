@@ -9,11 +9,13 @@ import aiosqlite
 
 from aiogram import F, Router
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from database import crud
 from database.db import get_db_connection
 from keyboards.admin_kb import admin_main_kb, order_admin_actions_kb
+from keyboards.reply import main_menu_kb
 from middlewares.i18n import get_text
 from services.notifier import format_order_admin_text
 from shop_config import Config, load_config
@@ -29,15 +31,35 @@ async def _resolve_db(db: Optional[aiosqlite.Connection]) -> aiosqlite.Connectio
     return await get_db_connection()
 
 
-@panel_router.message(Command("admin"))
-@panel_router.message(F.text.in_(["👑 Admin panel", "Admin paneli", "Admin", "/admin"]))
+@panel_router.message(Command("admin", "panel"))
+@panel_router.message(
+    F.text.in_([
+        "👑 Admin boshqaruv paneli",
+        "👑 Панель управления администратора",
+        "👑 Admin panel",
+        "Admin panel",
+        "Admin paneli",
+        "Admin",
+        "/admin",
+        "Панель администратора",
+        "Админ панель",
+        "Админ",
+        get_text("admin_panel_title", "uz"),
+        get_text("admin_panel_title", "ru"),
+    ])
+)
+@panel_router.message(F.text.regexp(r"(?i)^(/admin|admin\s*panel|👑\s*admin.*|панель\s*админ.*)$"))
 async def admin_panel_command(
     message: Message,
+    state: Optional[FSMContext] = None,
     config: Optional[Config] = None,
     lang: str = "uz",
     _t: Optional[Callable[..., str]] = None,
 ) -> None:
-    """Verifies admin access and displays persistent admin management keyboard."""
+    """Verifies admin access, clears any FSM state, and displays persistent admin management keyboard."""
+    if state is not None:
+        await state.clear()
+
     cfg = config or load_config()
     user_id = message.from_user.id if message.from_user else 0
 
@@ -46,13 +68,21 @@ async def admin_panel_command(
         await message.answer(reject_msg)
         return
 
-    title = get_text("admin_panel_title", lang=lang)
+    title = _t("admin_panel_title", lang=lang) if _t else get_text("admin_panel_title", lang=lang)
     welcome_text = f"👑 <b>{title}</b>\n\nDo'kon boshqaruv bo'limiga xush kelibsiz. Kerakli amalni tanlang:"
     await message.answer(welcome_text, reply_markup=admin_main_kb())
 
 
-@panel_router.message(F.text.in_(["📊 Statistika", "Statistika"]))
-@panel_router.message(Command("stats"))
+@panel_router.message(
+    F.text.in_([
+        "📊 Statistika",
+        "Statistika",
+        "📊 Статистика",
+        "Статистика",
+    ])
+)
+@panel_router.message(Command("stats", "statistika"))
+@panel_router.message(F.text.regexp(r"(?i)^(/stats|.*statistika|.*статистика)$"))
 async def admin_statistics(
     message: Message,
     db: Optional[aiosqlite.Connection] = None,
@@ -89,8 +119,18 @@ async def admin_statistics(
     await message.answer(stats_text, reply_markup=admin_main_kb())
 
 
-@panel_router.message(F.text.in_(["📦 Yangi buyurtmalar", "📦 Buyurtmalar", "Buyurtmalar"]))
-@panel_router.message(Command("orders"))
+@panel_router.message(
+    F.text.in_([
+        "📦 Yangi buyurtmalar",
+        "📦 Buyurtmalar",
+        "Buyurtmalar",
+        "📦 Новые заказы",
+        "📦 Заказы",
+        "Заказы",
+    ])
+)
+@panel_router.message(Command("orders", "buyurtmalar"))
+@panel_router.message(F.text.regexp(r"(?i)^(/orders|.*buyurtma.*|.*заказ.*)$"))
 async def admin_new_orders(
     message: Message,
     db: Optional[aiosqlite.Connection] = None,
@@ -137,3 +177,41 @@ async def admin_new_orders(
                 pass
 
         await message.answer(text, reply_markup=kb)
+
+
+@panel_router.message(Command("menu"))
+@panel_router.message(
+    F.text.in_([
+        "⬅️ Bosh menyu",
+        "Bosh menyu",
+        "⬅️ Главное меню",
+        "Главное меню",
+        "Menyu",
+        "Меню",
+    ])
+)
+async def admin_back_to_main_menu(
+    message: Message,
+    state: Optional[FSMContext] = None,
+    db: Optional[aiosqlite.Connection] = None,
+    config: Optional[Config] = None,
+    lang: str = "uz",
+    _t: Optional[Callable[..., str]] = None,
+) -> None:
+    """Returns admin from admin panel back to client main menu."""
+    if state is not None:
+        await state.clear()
+
+    cfg = config or load_config()
+    user_id = message.from_user.id if message.from_user else 0
+    is_admin = user_id in cfg.admin_ids
+
+    conn = await _resolve_db(db)
+    cart_items = await crud.get_cart(conn, user_id)
+    cart_count = sum(item.get("quantity", 1) for item in cart_items)
+
+    main_text = _t("main_menu", lang=lang) if _t else get_text("main_menu", lang=lang)
+    await message.answer(
+        main_text,
+        reply_markup=main_menu_kb(lang=lang, cart_count=cart_count, is_admin=is_admin),
+    )

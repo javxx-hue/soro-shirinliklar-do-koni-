@@ -22,8 +22,9 @@ class Config:
 
 def load_config() -> Config:
     bot_token = os.getenv("BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN", "")
-    admin_ids_raw = os.getenv("ADMIN_IDS", "")
-    admin_ids = [int(i.strip()) for i in admin_ids_raw.split(",") if i.strip().isdigit()]
+    admin_ids_raw = os.getenv("ADMIN_IDS") or os.getenv("OWNER_ID") or "7629355296"
+    clean_raw = admin_ids_raw.replace('"', '').replace("'", "").strip()
+    admin_ids = [int(i.strip()) for i in clean_raw.split(",") if i.strip().isdigit()]
     
     return Config(
         bot_token=bot_token,
