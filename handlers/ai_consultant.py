@@ -199,7 +199,7 @@ async def process_ai_query(
     # Resolve Gemini configuration
     cfg = load_config()
     api_key = cfg.gemini_api_key
-    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model_name = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
     # Generate grounded recommendation
     recommendation = await get_sweet_recommendation(
